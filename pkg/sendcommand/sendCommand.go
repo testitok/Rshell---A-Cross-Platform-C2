@@ -133,6 +133,8 @@ func SendCommand(uid string, command string) {
 		shell.ShellContent = "$ clear"
 		database.Engine.Where("uid = ?", uid).Update(&shell)
 		return
+	} else {
+		return
 	}
 	switch connection.ClientListenerType[uid] {
 	case "web":
