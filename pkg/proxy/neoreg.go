@@ -21,18 +21,18 @@ func StartSocks5Proxy(port string, uid string, username string, password string)
 	}
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		logger.Error("Listen error: %v\n", err)
+		logger.Error("Listen error:", err)
 		return
 	}
 	defer listener.Close()
 	MuSocks5Serve.Lock()
 	Socks5Serve[port] = listener
 	MuSocks5Serve.Unlock()
-	logger.Info("SOCKS5 proxy listening on :%s\n", port)
+	logger.Info("SOCKS5 proxy listening on :", port)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			logger.Error("Accept error: %v\n", err)
+			logger.Error("Accept error: ", err)
 			break
 		}
 		session := neoreg.NewSession(conn, c, username, password)

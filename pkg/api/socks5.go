@@ -33,7 +33,7 @@ func Socks5Start(c *gin.Context) {
 	}
 	inUse, err := isPortInUse(socks5Body.Socks5port)
 	if err != nil {
-		logger.Error("检测端口 %s 时发生错误: %v\n", socks5Body.Socks5port, err)
+		logger.Error("检测端口时发生错误: ", socks5Body.Socks5port, err)
 		return
 	}
 	if inUse {
@@ -58,7 +58,7 @@ func Socks5Open(c *gin.Context) {
 	}
 	inUse, err := isPortInUse(socks5Body.Socks5port)
 	if err != nil {
-		logger.Error("检测端口 %s 时发生错误: %v\n", socks5Body.Socks5port, err)
+		logger.Error("检测端口时发生错误:", socks5Body.Socks5port, err)
 	}
 	if inUse {
 		c.JSON(http.StatusOK, gin.H{"status": 400, "data": socks5Body.Socks5port + "端口被占用"})

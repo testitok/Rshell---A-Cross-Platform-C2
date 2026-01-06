@@ -283,7 +283,7 @@ func (s *Session) neoregRequest(info map[int][]byte, timeout time.Duration) (map
 		}
 
 		if string(rinfo[cmdStatus]) != "OK" && string(info[cmdCommand]) != "DISCONNECT" {
-			logger.Error("[%s] [%s:%d] Error: %s", info[cmdCommand], s.target, s.port, rinfo[cmdError])
+			logger.Error("Error: ", info[cmdCommand], s.target, s.port, rinfo[cmdError])
 		}
 
 		return rinfo, nil
@@ -427,7 +427,7 @@ func (s *Session) writer() {
 func (s *Session) Run() {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Error("Session panicked: %v", r)
+			logger.Error("Session panicked:", r)
 		}
 	}()
 
