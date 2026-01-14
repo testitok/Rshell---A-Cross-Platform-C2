@@ -701,12 +701,13 @@ WHERE uid = ? AND file_path = ?;
 					logger.Error("Security check failed:", err)
 					break
 				}
-
+				utils.Filelock.Lock()
 				var fileDownloads database.Downloads
 				if _, err := database.Engine.Where("uid = ? AND file_path = ?", uid, filePath).Get(&fileDownloads); err == nil {
 					fileDownloads.DownloadedSize += len(fileContent)
 					database.Engine.Where("uid = ? AND file_path = ?", uid, filePath).Update(&fileDownloads)
 				}
+				utils.Filelock.Unlock()
 
 				// 确保目录存在
 				downloadDir := filepath.Dir(fullPath)

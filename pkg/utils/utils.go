@@ -10,7 +10,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 )
+
+var Filelock sync.Mutex
 
 func BytesCombine(pBytes ...[]byte) []byte {
 	return bytes.Join(pBytes, []byte(""))

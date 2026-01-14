@@ -730,25 +730,14 @@ WHERE uid = ? AND file_path = ?;
 				}
 
 				// 使用事务更新数据库
-				sessionDB := database.Engine.NewSession()
-				if err := sessionDB.Begin(); err != nil {
-					logger.Error("KCP failed to start transaction:", err)
-					break
-				}
-
+				utils.Filelock.Lock()
+				// 使用事务更新数据库
 				var fileDownloads database.Downloads
-				if _, err := sessionDB.Where("uid = ? AND file_path = ?", uid, filePath).Get(&fileDownloads); err == nil {
+				if _, err := database.Engine.Where("uid = ? AND file_path = ?", uid, filePath).Get(&fileDownloads); err == nil {
 					fileDownloads.DownloadedSize += len(fileContent)
-					if _, err := sessionDB.Where("uid = ? AND file_path = ?", uid, filePath).Update(&fileDownloads); err != nil {
-						sessionDB.Rollback()
-						logger.Error("KCP failed to update downloads:", err)
-						break
-					}
+					database.Engine.Where("uid = ? AND file_path = ?", uid, filePath).Update(&fileDownloads)
 				}
-
-				if err := sessionDB.Commit(); err != nil {
-					logger.Error("KCP failed to commit transaction:", err)
-				}
+				utils.Filelock.Unlock()
 
 				// 确保目录存在
 				downloadDir := filepath.Dir(fullPath)
