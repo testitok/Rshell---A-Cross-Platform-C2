@@ -148,6 +148,7 @@ windows内存执行 支持Execute Assembly(.net程序内存执行)、Inline Bin(
 - [ ] 丰富上线提醒的方式
 - [ ] 增加插件模块  [#9](https://github.com/Rubby2001/Rshell---A-Cross-Platform-C2/issues/9)
 - [ ] 增加开机启动等插件是否合适  [#9](https://github.com/Rubby2001/Rshell---A-Cross-Platform-C2/issues/9)
+- [ ] 通讯流量实现自定义配置或随机密钥，增加逆向解密难度
 
 # 相关项目
 
