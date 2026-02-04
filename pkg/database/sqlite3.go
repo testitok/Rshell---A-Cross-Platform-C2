@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"xorm.io/xorm"
 )
 
@@ -102,9 +102,9 @@ func ConnectDateBase() {
 	// 设置数据库路径为程序所在目录下的 database.db
 	DatabaseName = filepath.Join(exeDir, "database.db")
 
-	Engine, err = xorm.NewEngine("sqlite3", DatabaseName)
+	Engine, err = xorm.NewEngine("sqlite", DatabaseName)
 	if err != nil {
-		log.Fatalf("连接sqlite3数据库失败: %v", err)
+		log.Fatalf("连接sqlite数据库失败: %v", err)
 	}
 	err = Engine.Sync2(new(Users), new(Clients), new(Notes), new(Shell), new(Downloads), new(Listener), new(WebDelivery), new(Socks5), new(Settings), new(Key))
 	if err != nil {
