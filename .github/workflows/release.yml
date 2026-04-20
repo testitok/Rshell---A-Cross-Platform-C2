@@ -16,10 +16,16 @@ jobs:
       with:
         fetch-depth: 0
     
-    - uses: actions/setup-go@v5
+    - name: Set up Go
+      uses: actions/setup-go@v5
       with:
-        go-version: '1.21'
-        cache: true
+        go-version: '1.21.0'  # 使用完整版本号
+        check-latest: true     # 检查最新补丁版本
+    
+    - name: Verify Go installation
+      run: |
+        go version
+        go env
     
     - name: Tidy and verify modules
       run: |
