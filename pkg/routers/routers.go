@@ -89,6 +89,7 @@ func NewRouter(embedFS embed.FS, staticFs fs.FS) *gin.Engine {
 		clients.GET("/file/drives", api.ListDrives)
 		clients.POST("/file/filecontent", api.FetchFileContent)
 		clients.GET("/exit", api.ExitClient)
+		clients.POST("/batch-exit", api.BatchExitClients)
 		clients.POST("/addnote", api.AddUidNote)
 		clients.POST("/sleep", api.EditSleep)
 		clients.POST("/color", api.EditColor)
