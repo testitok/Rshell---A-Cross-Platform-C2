@@ -24,6 +24,7 @@ func GenServer(c *gin.Context) {
 	}
 	if err := c.BindJSON(&serverBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	osType := serverBody.OsType
 	archType := serverBody.ArchType
@@ -36,11 +37,12 @@ func GenServer(c *gin.Context) {
 	binaryFileName := findBinary(listenerType, osType, archType)
 	if binaryFileName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "未找到匹配的服务端文件"})
+		return
 	}
-	// 从嵌入的文件系统中读取对应文件内容
 	binaryData, err := embeddedFiles.ReadFile("server/" + listenerType + "/" + binaryFileName)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "读取文件失败"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "读取文件失败: " + err.Error()})
+		return
 	}
 
 	var modifiedData []byte
@@ -93,13 +95,14 @@ func findBinary(listenerType, osType, archType string) string {
 		return ""
 	}
 
+	base := "r_" + osType + "_" + archType
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
 		name := entry.Name()
-		if name == "r_"+osType+"_"+archType || name == "r_"+osType+"_"+archType+".exe" {
-			//return filepath.Join("server", name)
+		if name == base || name == base+".exe" {
 			return name
 		}
 	}

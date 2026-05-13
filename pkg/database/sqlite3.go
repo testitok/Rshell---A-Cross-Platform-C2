@@ -122,7 +122,6 @@ type CredentialDumps struct {
 	FileSize  int64  `json:"fileSize"`
 	CreatedAt int64  `json:"createdAt"`
 }
-
 func generateInitialAdminPassword(length int) (string, error) {
 	if length <= 0 {
 		length = 20

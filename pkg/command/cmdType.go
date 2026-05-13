@@ -30,6 +30,7 @@ const (
 	ExecuteLinuxScript   = 43
 	SCREENSHOT           = 44
 	DUMP_DATA            = 45
+	ExecuteLinuxBin      = 46
 	GETSYSTEM            = 80
 	MIMIKATZ             = 81
 	PROCESS_INJECT       = 82

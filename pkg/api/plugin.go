@@ -189,6 +189,17 @@ func ExecutePlugin(c *gin.Context) {
 			binary.BigEndian.PutUint32(cmdTypeBytes, uint32(command.ExecuteLinuxScript))
 			byteToSend = append(cmdTypeBytes, byteToSend...)
 			sendcommand.SendCommandBytes(req.Uid, byteToSend)
+		} else if plugin.Type == "binary" {
+			fileLength := len(fileBytes)
+			fileLengthBytes := make([]byte, 4)
+			binary.BigEndian.PutUint32(fileLengthBytes, uint32(fileLength))
+
+			byteToSend := utils.BytesCombine(fileLengthBytes, fileBytes, []byte(req.Args))
+
+			cmdTypeBytes := make([]byte, 4)
+			binary.BigEndian.PutUint32(cmdTypeBytes, uint32(command.ExecuteLinuxBin))
+			byteToSend = append(cmdTypeBytes, byteToSend...)
+			sendcommand.SendCommandBytes(req.Uid, byteToSend)
 		}
 	}
 
