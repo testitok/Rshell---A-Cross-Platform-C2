@@ -605,6 +605,9 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 					database.Engine.Where("uid = ?", uid).Update(&shell)
 				}
 
+			case command.SearchSensitive:
+				database.SaveSensitiveChunk(uid, string(data))
+
 			case command.PS:
 				if len(data) > 0 {
 					command.VarPidQueue.Add(uid, string(data))

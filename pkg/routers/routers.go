@@ -136,6 +136,7 @@ func NewRouter(embedFS embed.FS, staticFs fs.FS) *gin.Engine {
 	protected.POST("/bin/execute", api.ExecuteBin)
 	protected.POST("/bin/executelinuxscript", api.ExecuteLinuxScript)
 	protected.POST("/bin/executelinuxbin", api.ExecuteLinuxBin)
+	protected.POST("/client/searchsensitive", api.SearchSensitive)
 
 	shellcode := protected.Group("/shellcode")
 	{
@@ -149,6 +150,13 @@ func NewRouter(embedFS embed.FS, staticFs fs.FS) *gin.Engine {
 		plugin.POST("/add", api.AddPlugin)
 		plugin.POST("/delete", api.DeletePlugin)
 		plugin.POST("/execute", api.ExecutePlugin)
+	}
+
+	sensitive := protected.Group("/sensitive")
+	{
+		sensitive.GET("/list/:uid", api.ListSensitiveResults)
+		sensitive.GET("/content/:id", api.GetSensitiveResultContent)
+		sensitive.DELETE("/delete/:id", api.DeleteSensitiveResult)
 	}
 
 	// WebSocket认证token获取端点 - 需要JWT认证

