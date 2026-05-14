@@ -36,7 +36,6 @@ Rshell是一款开源的golang编写的支持多平台的C2框架，旨在帮助
 - 客户端管理（终端、文件、进程管理等操作）
 - Windows专项高级操作（shellcode免杀生成与各类内存执行）
 - 插件的使用与管理
-- MCP功能开启与使用
 
 ## ToDoList
 
@@ -47,7 +46,6 @@ Rshell是一款开源的golang编写的支持多平台的C2框架，旨在帮助
 - [x] 截图功能  [#9](https://github.com/Rubby2001/Rshell---A-Cross-Platform-C2/issues/9)
 - [x] linux内存执行
 - [x] web托管bash、bat脚本  [#24](https://github.com/Rubby2001/Rshell---A-Cross-Platform-C2/issues/24)  (合并到内存执行)
-- [x] 增加MCP功能
 - [ ] 笔记功能增加图床
 - [ ] 笔记md格式所见即所得
 - [ ] 一键信息收集，收集信息内容直接保存到笔记中

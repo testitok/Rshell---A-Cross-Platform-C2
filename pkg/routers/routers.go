@@ -3,7 +3,6 @@ package routers
 import (
 	"Rshell/pkg/api"
 	"Rshell/pkg/middlewares"
-	"Rshell/pkg/mcp"
 	"embed"
 	"html/template"
 	"io/fs"
@@ -180,16 +179,6 @@ func NewRouter(embedFS embed.FS, staticFs fs.FS) *gin.Engine {
 		credentials.GET("/dumps", api.ListCredentialDumps)
 		credentials.GET("/dump/download", api.DownloadCredentialDump)
 	}
-
-	// MCP Endpoints (Protected by JWT AuthMiddleware)
-	mcpGroup := protected.Group("/mcp")
-	mcpGroup.Use(mcp.MCPEnabledMiddleware())
-	{
-		mcpGroup.GET("/sse", mcp.HandleSSE)
-		mcpGroup.POST("/message", mcp.HandleMessage)
-	}
-
-	mcp.GlobalEngine = r
 
 	return r
 }

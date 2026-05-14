@@ -12,7 +12,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20240510055607-89e20ab7b6c6
-	github.com/mark3labs/mcp-go v0.49.0
 	github.com/wabzsy/compression v0.0.0-20240604145731-4b6cc6b919b7
 	github.com/xtaci/kcp-go/v5 v5.6.18
 	golang.org/x/crypto v0.32.0
